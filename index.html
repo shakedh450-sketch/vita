@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vita Food | Menu & Reviews</title>
+    <title>Vita Food | Menu & Feedback</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,41 +16,81 @@
 
         body { font-family: 'Assistant', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
 
-        /* Header UI */
+        /* Header & Nav */
         .header { text-align: center; padding: 40px 20px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1550547660-d9450f859349?w=1000'); background-size: cover; background-position: center; }
         .header h1 { color: var(--primary-orange); font-size: 2.5rem; margin: 0; }
-
-        /* Nav Section (Search & Tabs) */
         .nav-section { position: sticky; top: 0; background-color: var(--bg-color); z-index: 1000; padding-top: 15px; border-bottom: 1px solid var(--border-color); }
         .search-container { padding: 0 15px 15px 15px; }
-        .search-input { width: 100%; padding: 12px 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; color: white; box-sizing: border-box; font-family: 'Assistant', sans-serif; }
+        .search-input { width: 100%; padding: 12px 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; color: white; box-sizing: border-box; }
         .tabs-container { display: flex; overflow-x: auto; gap: 12px; padding: 0 15px 15px 15px; scrollbar-width: none; }
         .tab-button { padding: 8px 20px; background: var(--card-bg); border: 1px solid var(--border-color); color: white; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .tab-button.active { background: var(--primary-orange); color: black; border-color: var(--primary-orange); }
+        .tab-button.active { background: var(--primary-orange); color: black; }
 
         /* Menu Grid */
         .menu-grid { padding: 20px; display: grid; gap: 15px; }
-        .menu-item { background-color: var(--card-bg); border-radius: 15px; overflow: hidden; display: flex; height: 110px; border: 1px solid var(--border-color); animation: fadeIn 0.4s ease; }
+        .menu-item { background-color: var(--card-bg); border-radius: 15px; overflow: hidden; display: flex; height: 110px; border: 1px solid var(--border-color); }
         .item-content { flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
-        .item-content h3 { margin: 0; font-size: 1.1rem; }
-        .item-content p { margin: 4px 0; color: #aaa; font-size: 0.85rem; line-height: 1.2; overflow: hidden; }
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; }
 
-        /* Floating Review Button (FAB) */
-        .review-fab { position: fixed; bottom: 25px; left: 25px; background-color: var(--primary-orange); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.5); cursor: pointer; z-index: 2000; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        /* --- FAB עם כיתוב מושך --- */
+        .review-wrapper {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+        }
 
-        /* Modal Rating UI */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(5px); }
+        .review-label {
+            background: var(--primary-orange);
+            color: black;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            white-space: nowrap;
+            position: relative;
+        }
+
+        /* חץ קטן לבועה */
+        .review-label::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 6px solid var(--primary-orange);
+        }
+
+        .review-fab {
+            background-color: var(--primary-orange);
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(8px); }
         .modal-content { background: var(--card-bg); padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 400px; border: 1px solid var(--primary-orange); }
-        .stars-container { display: flex; justify-content: center; gap: 10px; margin: 20px 0; font-size: 2.5rem; }
-        .star { cursor: pointer; color: #444; transition: 0.2s; }
+        .stars-container { display: flex; justify-content: center; gap: 8px; margin: 20px 0; font-size: 2.2rem; }
+        .star { cursor: pointer; color: #333; }
         .star.active { color: var(--primary-orange); }
         .hidden { display: none; }
-        .btn-submit { margin-top: 15px; padding: 10px 20px; background: var(--primary-orange); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-submit { margin-top: 15px; padding: 12px 25px; background: var(--primary-orange); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
@@ -69,15 +109,18 @@
 
     <div id="menu-container" class="menu-grid"></div>
 
-    <div class="review-fab" onclick="openReviewModal()">
-        <span style="font-size: 30px;">⭐</span>
+    <div class="review-wrapper" onclick="openReviewModal()">
+        <div class="review-label">פרגנו לנו ב-5 כוכבים ⭐</div>
+        <div class="review-fab">
+            <span style="font-size: 24px;">📝</span>
+        </div>
     </div>
 
     <div id="review-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="modal-title">איך הייתה החוויה?</h2>
-            <p id="modal-desc">פרגנו לנו בדירוג!</p>
-            <div class="stars-container" id="stars">
+            <p id="modal-desc">הדירוג שלכם חשוב לנו מאוד!</p>
+            <div class="stars-container" id="stars-div">
                 <span class="star" onclick="handleRating(1)">★</span>
                 <span class="star" onclick="handleRating(2)">★</span>
                 <span class="star" onclick="handleRating(3)">★</span>
@@ -85,16 +128,16 @@
                 <span class="star" onclick="handleRating(5)">★</span>
             </div>
             <div id="feedback-area" class="hidden">
-                <textarea id="low-rating-text" style="width:100%; height:80px; border-radius:10px; padding:10px; background:#222; color:white; border:1px solid #444;" placeholder="מה נוכל לשפר?"></textarea>
-                <button class="btn-submit" onclick="submitInternalFeedback()">שלח משוב</button>
+                <textarea id="low-rating-text" style="width:100%; height:100px; border-radius:10px; padding:12px; background:#111; color:white; border:1px solid #444;" placeholder="מה נוכל לשפר בפעם הבאה?"></textarea>
+                <button class="btn-submit" id="submit-btn" onclick="submitToFirebase()">שלח משוב לבעלים</button>
             </div>
-            <button onclick="closeReviewModal()" style="margin-top:20px; background:none; border:none; color:#aaa; cursor:pointer;">סגור</button>
+            <button onclick="closeReviewModal()" style="margin-top:20px; background:none; border:none; color:#777; cursor:pointer;">סגור</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAhBcHYHkYgkgdq04hvdg5o-HaSWYb645g",
@@ -108,11 +151,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // הלינק האמיתי ששלחת
         const GOOGLE_REVIEW_LINK = "https://search.google.com/local/writereview?placeid=ChIJg-W3-05THBURSuuTalV3WlI";
 
         let allItems = [];
-        let currentCategory = 'הכל';
+        let selectedRating = 0;
 
         async function loadMenu() {
             try {
@@ -126,33 +168,60 @@
         window.openReviewModal = () => document.getElementById('review-modal').style.display = 'flex';
         window.closeReviewModal = () => { document.getElementById('review-modal').style.display = 'none'; resetModal(); };
 
-        window.handleRating = (rating) => {
+        window.handleRating = async (rating) => {
+            selectedRating = rating;
             document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < rating));
+            
             if (rating >= 4) {
                 document.getElementById('modal-title').innerText = "תודה על הפרגון!";
                 document.getElementById('modal-desc').innerText = "מעבירים אתכם לגוגל...";
+                // שומרים את הדירוג החיובי ב-Firebase לפני שעוברים לגוגל (אופציונלי)
+                await addDoc(collection(db, "feedback_vitafood"), { rating: rating, timestamp: serverTimestamp(), type: "positive" });
                 setTimeout(() => { window.open(GOOGLE_REVIEW_LINK, '_blank'); closeReviewModal(); }, 1200);
             } else {
-                document.getElementById('modal-title').innerText = "נשמח ללמוד ממכם";
-                document.getElementById('modal-desc').innerText = "איך נוכל להשתפר?";
-                document.getElementById('stars').classList.add('hidden');
+                document.getElementById('modal-title').innerText = "חשוב לנו לתקן";
+                document.getElementById('modal-desc').innerText = "נשמח לשמוע מה לא היה תקין:";
+                document.getElementById('stars-div').classList.add('hidden');
                 document.getElementById('feedback-area').classList.remove('hidden');
             }
         };
 
-        window.submitInternalFeedback = () => {
-            document.getElementById('feedback-area').innerHTML = "<h3>המשוב התקבל, תודה!</h3>";
-            setTimeout(closeReviewModal, 2000);
+        window.submitToFirebase = async () => {
+            const feedbackText = document.getElementById('low-rating-text').value;
+            const btn = document.getElementById('submit-btn');
+            
+            btn.innerText = "שולח...";
+            btn.disabled = true;
+
+            try {
+                // שמירה ב-Firebase באוסף feedback_vitafood
+                await addDoc(collection(db, "feedback_vitafood"), {
+                    rating: selectedRating,
+                    text: feedbackText,
+                    timestamp: serverTimestamp(),
+                    type: "negative/improvement"
+                });
+
+                document.getElementById('feedback-area').innerHTML = "<h3>המשוב התקבל. תודה שעזרת לנו להשתפר!</h3>";
+                setTimeout(closeReviewModal, 2500);
+            } catch (e) {
+                console.error("Error saving feedback:", e);
+                alert("חלה שגיאה בשליחה. נסה שוב.");
+                btn.disabled = false;
+                btn.innerText = "שלח משוב לבעלים";
+            }
         };
 
         function resetModal() {
             document.getElementById('modal-title').innerText = "איך הייתה החוויה?";
-            document.getElementById('modal-desc').innerText = "פרגנו לנו בדירוג!";
-            document.getElementById('stars').classList.remove('hidden');
+            document.getElementById('modal-desc').innerText = "הדירוג שלכם חשוב לנו מאוד!";
+            document.getElementById('stars-div').classList.remove('hidden');
             document.getElementById('feedback-area').classList.add('hidden');
             document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+            selectedRating = 0;
         }
 
+        // --- Menu Logic ---
         function renderTabs(items) {
             const container = document.getElementById('categories-container');
             const categories = ['הכל', ...new Set(items.map(item => item.category))];
@@ -161,14 +230,13 @@
 
         function renderMenu(items) {
             const container = document.getElementById('menu-container');
-            const placeholder = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200';
             container.innerHTML = items.map(item => `
                 <div class="menu-item">
                     <div class="item-content">
                         <div><h3>${item.name}</h3><p>${item.description || ''}</p></div>
                         <div class="item-price">₪${item.price}</div>
                     </div>
-                    <div class="item-image" style="background-image: url('${item.imageUrl || placeholder}')"></div>
+                    <div class="item-image" style="background-image: url('${item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'}')"></div>
                 </div>
             `).join('');
         }
@@ -176,20 +244,16 @@
         window.setCategory = (category, button) => {
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            currentCategory = category;
-            applyFilters();
+            const filtered = category === 'הכל' ? allItems : allItems.filter(i => i.category === category);
+            renderMenu(filtered);
         };
 
-        function applyFilters() {
-            const searchTerm = document.getElementById('menu-search').value.toLowerCase();
-            const filtered = allItems.filter(item => {
-                const matchesCategory = (currentCategory === 'הכל' || item.category === currentCategory);
-                return matchesCategory && item.name.toLowerCase().includes(searchTerm);
-            });
+        document.getElementById('menu-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allItems.filter(i => i.name.toLowerCase().includes(term));
             renderMenu(filtered);
-        }
+        });
 
-        document.getElementById('menu-search').addEventListener('input', applyFilters);
         loadMenu();
     </script>
 </body>
