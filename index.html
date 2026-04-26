@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vita Food | Menu</title>
+    <title>Vita Food | תפריט דיגיטלי</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,7 +11,6 @@
             --bg-color: #121212;
             --card-bg: #1e1e1e;
             --text-color: #ffffff;
-            --sub-text: #bbbbbb;
             --border-color: #333333;
         }
 
@@ -25,47 +24,66 @@
 
         .header {
             text-align: center;
-            padding: 50px 20px;
+            padding: 40px 20px;
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1550547660-d9450f859349?w=1000');
-            background-size: cover;
-            background-position: center;
-            color: white;
+            background-size: cover; background-position: center;
         }
 
         .header h1 { color: var(--primary-orange); font-size: 2.5rem; margin: 0; }
 
-        .tabs-wrapper {
+        /* אזור הניווט: חיפוש + טאבים */
+        .nav-section {
             position: sticky;
             top: 0;
             background-color: var(--bg-color);
             z-index: 1000;
-            padding: 15px 0;
+            padding-top: 15px;
             border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-container {
+            padding: 0 15px 15px 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: white;
+            font-family: 'Assistant', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.3);
         }
 
         .tabs-container {
             display: flex;
             overflow-x: auto;
             gap: 12px;
-            padding: 0 15px;
+            padding: 0 15px 15px 15px;
             scrollbar-width: none;
         }
+        .tabs-container::-webkit-scrollbar { display: none; }
 
         .tab-button {
             padding: 8px 20px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            color: var(--text-color);
-            border-radius: 25px;
+            color: white;
+            border-radius: 20px;
             font-weight: bold;
             cursor: pointer;
             white-space: nowrap;
         }
 
-        .tab-button.active {
-            background: var(--primary-orange);
-            color: black;
-        }
+        .tab-button.active { background: var(--primary-orange); color: black; border-color: var(--primary-orange); }
 
         .menu-grid { padding: 20px; display: grid; gap: 15px; }
 
@@ -76,6 +94,7 @@
             display: flex;
             height: 110px;
             border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease forwards;
         }
 
         .item-content {
@@ -87,15 +106,18 @@
         }
 
         .item-content h3 { margin: 0; font-size: 1.1rem; }
-        .item-content p { margin: 4px 0; color: var(--sub-text); font-size: 0.85rem; }
+        .item-content p { margin: 4px 0; color: #aaa; font-size: 0.85rem; line-height: 1.2; }
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
 
         .item-image {
-            width: 110px;
-            height: 110px;
-            background-size: cover;
-            background-position: center;
+            width: 110px; height: 110px;
+            background-size: cover; background-position: center;
             background-color: #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -106,7 +128,10 @@
         <p>Premium Burgers & Smokehouse</p>
     </div>
 
-    <div class="tabs-wrapper">
+    <div class="nav-section">
+        <div class="search-container">
+            <input type="text" id="menu-search" class="search-input" placeholder="חפש מנה (למשל: אנטריקוט)...">
+        </div>
         <div id="categories-container" class="tabs-container"></div>
     </div>
 
@@ -130,6 +155,7 @@
         const db = getFirestore(app);
 
         let allItems = [];
+        let currentCategory = 'הכל';
 
         async function loadMenu() {
             try {
@@ -145,13 +171,32 @@
             const categories = ['הכל', ...new Set(items.map(item => item.category))];
             container.innerHTML = categories.map(cat => `
                 <button class="tab-button ${cat === 'הכל' ? 'active' : ''}" 
-                        onclick="window.filterMenu('${cat}', this)">${cat}</button>
+                        onclick="window.setCategory('${cat}', this)">${cat}</button>
             `).join('');
+        }
+
+        // פונקציית הסינון המשולבת (חיפוש + טאבים)
+        function applyFilters() {
+            const searchTerm = document.getElementById('menu-search').value.toLowerCase();
+            
+            const filtered = allItems.filter(item => {
+                const matchesCategory = (currentCategory === 'הכל' || item.category === currentCategory);
+                const matchesSearch = (item.name.toLowerCase().includes(searchTerm) || 
+                                     (item.description && item.description.toLowerCase().includes(searchTerm)));
+                return matchesCategory && matchesSearch;
+            });
+
+            renderMenu(filtered);
         }
 
         function renderMenu(items) {
             const container = document.getElementById('menu-container');
             const placeholder = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200';
+
+            if (items.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#888; padding:20px;">לא נמצאו מנות תואמות...</p>`;
+                return;
+            }
 
             container.innerHTML = items.map(item => `
                 <div class="menu-item">
@@ -167,12 +212,16 @@
             `).join('');
         }
 
-        window.filterMenu = (category, button) => {
+        // הגדרת פונקציות גלובליות
+        window.setCategory = (category, button) => {
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            const filtered = category === 'הכל' ? allItems : allItems.filter(i => i.category === category);
-            renderMenu(filtered);
+            currentCategory = category;
+            applyFilters();
         };
+
+        // האזנה לחיפוש
+        document.getElementById('menu-search').addEventListener('input', applyFilters);
 
         loadMenu();
     </script>
