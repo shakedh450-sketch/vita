@@ -253,7 +253,28 @@
             const filtered = allItems.filter(i => i.name.toLowerCase().includes(term));
             renderMenu(filtered);
         });
+async function seedDatabase() {
+    const items = [
+        { name: "המבורגר אנטריקוט (250 ג')", price: 92, category: "burgers", desc: "נתח אנטריקוט מובחר, איולי כמהין, חסה, עגבניה ובצל מקורמל", imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" },
+        { name: "המבורגר מעשנת", price: 98, category: "burgers", desc: "קציצת בקר עם אסאדו מפורק מעושן 12 שעות, רוטב ברביקיו וצ'ימיצ'ורי", imageUrl: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=500" },
+        { name: "המבורגר טבעוני", price: 85, category: "burgers", desc: "קציצה מהצומח, ריבת בצל, איולי טבעוני וירקות טריים", imageUrl: "https://images.unsplash.com/photo-1584947844695-e69fc3d33424?w=500" },
+        { name: "צ'יפס קריספי", price: 28, category: "sides", desc: "צ'יפס הבית עם תערובת תבלינים", imageUrl: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500" },
+        { name: "טבעות בצל", price: 32, category: "sides", desc: "בציפוי בירה פריך", imageUrl: "https://images.unsplash.com/photo-1639024471283-035188835118?w=500" },
+        { name: "קוקה קולה", price: 14, category: "drinks", desc: "בקבוק זכוכית 330 מ''ל", imageUrl: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500" },
+        { name: "בירה מהחבית", price: 34, category: "drinks", desc: "חצי ליטר לאגר צוננת", imageUrl: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=500" }
+    ];
 
+    for (const item of items) {
+        try {
+            await addDoc(collection(db, "menu_vitafood"), item);
+            console.log("נוסף:", item.name);
+        } catch (e) { console.error("שגיאה:", e); }
+    }
+    alert("התפריט עודכן! עכשיו מחק את הקוד הזה מה-VS Code.");
+}
+
+// שורה להפעלה - תמחק אותה אחרי שהרצת פעם אחת
+seedDatabase();
         loadMenu();
     </script>
 </body>
