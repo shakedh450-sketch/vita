@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vita Food | Menu & Feedback</title>
+    <title>Vita Food | תפריט דיגיטלי חכם</title>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,85 +12,62 @@
             --card-bg: #1e1e1e;
             --text-color: #ffffff;
             --border-color: #333333;
+            --success-green: #4caf50;
         }
 
-        body { font-family: 'Assistant', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
+        body { font-family: 'Assistant', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* Header & Nav */
+        /* Header */
         .header { text-align: center; padding: 40px 20px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1550547660-d9450f859349?w=1000'); background-size: cover; background-position: center; }
-        .header h1 { color: var(--primary-orange); font-size: 2.5rem; margin: 0; }
+        .header h1 { color: var(--primary-orange); font-size: 2.5rem; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+
+        /* Nav Section (Search & Tabs) */
         .nav-section { position: sticky; top: 0; background-color: var(--bg-color); z-index: 1000; padding-top: 15px; border-bottom: 1px solid var(--border-color); }
         .search-container { padding: 0 15px 15px 15px; }
-        .search-input { width: 100%; padding: 12px 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; color: white; box-sizing: border-box; }
+        .search-input { width: 100%; padding: 12px 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; color: white; box-sizing: border-box; font-family: 'Assistant', sans-serif; font-size: 1rem; }
         .tabs-container { display: flex; overflow-x: auto; gap: 12px; padding: 0 15px 15px 15px; scrollbar-width: none; }
-        .tab-button { padding: 8px 20px; background: var(--card-bg); border: 1px solid var(--border-color); color: white; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .tab-button.active { background: var(--primary-orange); color: black; }
+        .tabs-container::-webkit-scrollbar { display: none; }
+        .tab-button { padding: 8px 20px; background: var(--card-bg); border: 1px solid var(--border-color); color: white; border-radius: 20px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .tab-button.active { background: var(--primary-orange); color: black; border-color: var(--primary-orange); }
 
         /* Menu Grid */
         .menu-grid { padding: 20px; display: grid; gap: 15px; }
-        .menu-item { background-color: var(--card-bg); border-radius: 15px; overflow: hidden; display: flex; height: 110px; border: 1px solid var(--border-color); }
-        .item-content { flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+        .menu-item { background-color: var(--card-bg); border-radius: 15px; overflow: hidden; display: flex; height: 110px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; animation: fadeIn 0.4s ease; }
+        .menu-item:active { transform: scale(0.98); }
+        .item-content { flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .item-content h3 { margin: 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-content p { margin: 4px 0; color: #aaa; font-size: 0.85rem; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
-        .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; }
+        .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
-        /* --- FAB עם כיתוב מושך --- */
-        .review-wrapper {
-            position: fixed;
-            bottom: 25px;
-            left: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 2000;
-        }
+        /* Modal Base */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--card-bg); border-radius: 20px; text-align: center; width: 90%; max-width: 450px; border: 1px solid var(--border-color); position: relative; overflow: hidden; }
 
-        .review-label {
-            background: var(--primary-orange);
-            color: black;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            white-space: nowrap;
-            position: relative;
-        }
+        /* Item Detail Modal Specifics */
+        .large-item-image { width: 100%; height: 250px; background-size: cover; background-position: center; }
+        .item-info-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 10px; }
+        .large-price { font-size: 1.5rem; font-weight: 800; color: var(--primary-orange); }
+        .full-description { padding: 0 20px; color: #ccc; line-height: 1.5; text-align: right; }
+        .extras-section { padding: 20px; border-top: 1px solid #333; margin-top: 20px; text-align: right; }
+        .extras-list { display: grid; gap: 10px; margin-top: 10px; }
+        .extra-item { display: flex; justify-content: space-between; background: #222; padding: 12px; border-radius: 10px; border: 1px solid #444; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; color: white; cursor: pointer; z-index: 10; background: rgba(0,0,0,0.5); width: 40px; height: 40px; border-radius: 50%; line-height: 35px; }
 
-        /* חץ קטן לבועה */
-        .review-label::after {
-            content: '';
-            position: absolute;
-            right: -6px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-top: 6px solid transparent;
-            border-bottom: 6px solid transparent;
-            border-left: 6px solid var(--primary-orange);
-        }
-
-        .review-fab {
-            background-color: var(--primary-orange);
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
-            cursor: pointer;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
-
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(8px); }
-        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 400px; border: 1px solid var(--primary-orange); }
-        .stars-container { display: flex; justify-content: center; gap: 8px; margin: 20px 0; font-size: 2.2rem; }
-        .star { cursor: pointer; color: #333; }
+        /* Review Booster (FAB) */
+        .review-wrapper { position: fixed; bottom: 25px; left: 25px; display: flex; align-items: center; gap: 10px; z-index: 2000; cursor: pointer; }
+        .review-label { background: var(--primary-orange); color: black; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap; }
+        .review-fab { background-color: var(--primary-orange); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(255,152,0,0.4); animation: pulse 2s infinite; }
+        
+        /* Stars & Rating */
+        .stars-container { display: flex; justify-content: center; gap: 8px; margin: 25px 0; font-size: 2.5rem; }
+        .star { cursor: pointer; color: #333; transition: 0.2s; }
         .star.active { color: var(--primary-orange); }
         .hidden { display: none; }
-        .btn-submit { margin-top: 15px; padding: 12px 25px; background: var(--primary-orange); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-submit { margin-top: 15px; padding: 15px; background: var(--primary-orange); border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -102,7 +79,7 @@
 
     <div class="nav-section">
         <div class="search-container">
-            <input type="text" id="menu-search" class="search-input" placeholder="חפש מנה...">
+            <input type="text" id="menu-search" class="search-input" placeholder="חפש מנה טעימה...">
         </div>
         <div id="categories-container" class="tabs-container"></div>
     </div>
@@ -110,16 +87,14 @@
     <div id="menu-container" class="menu-grid"></div>
 
     <div class="review-wrapper" onclick="openReviewModal()">
-        <div class="review-label">פרגנו לנו ב-5 כוכבים ⭐</div>
-        <div class="review-fab">
-            <span style="font-size: 24px;">📝</span>
-        </div>
+        <div class="review-label">נהניתם? פרגנו לנו! ⭐</div>
+        <div class="review-fab"><span style="font-size: 28px;">📝</span></div>
     </div>
 
     <div id="review-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="modal-title">איך הייתה החוויה?</h2>
-            <p id="modal-desc">הדירוג שלכם חשוב לנו מאוד!</p>
+        <div class="modal-content" style="padding: 30px;">
+            <h2 id="review-title">איך הייתה החוויה?</h2>
+            <p id="review-desc">הדירוג שלכם עוזר לנו להשתפר</p>
             <div class="stars-container" id="stars-div">
                 <span class="star" onclick="handleRating(1)">★</span>
                 <span class="star" onclick="handleRating(2)">★</span>
@@ -128,10 +103,29 @@
                 <span class="star" onclick="handleRating(5)">★</span>
             </div>
             <div id="feedback-area" class="hidden">
-                <textarea id="low-rating-text" style="width:100%; height:100px; border-radius:10px; padding:12px; background:#111; color:white; border:1px solid #444;" placeholder="מה נוכל לשפר בפעם הבאה?"></textarea>
-                <button class="btn-submit" id="submit-btn" onclick="submitToFirebase()">שלח משוב לבעלים</button>
+                <textarea id="low-rating-text" style="width:100%; height:100px; border-radius:10px; padding:12px; background:#111; color:white; border:1px solid #444; font-family:inherit;" placeholder="נשמח לשמוע מה נוכל לשפר בפעם הבאה?"></textarea>
+                <button class="btn-submit" id="submit-feedback-btn" onclick="submitToFirebase()">שלח משוב לבעלים</button>
             </div>
-            <button onclick="closeReviewModal()" style="margin-top:20px; background:none; border:none; color:#777; cursor:pointer;">סגור</button>
+            <button onclick="closeReviewModal()" style="margin-top:20px; background:none; border:none; color:#777; cursor:pointer; font-size: 1rem;">סגור</button>
+        </div>
+    </div>
+
+    <div id="item-modal" class="modal-overlay" onclick="if(event.target == this) closeItemModal()">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeItemModal()">&times;</span>
+            <div id="modal-item-image" class="large-item-image"></div>
+            <div class="item-info-header">
+                <h2 id="modal-item-name" style="margin:0;"></h2>
+                <span id="modal-item-price" class="large-price"></span>
+            </div>
+            <p id="modal-item-desc" class="full-description"></p>
+            <div class="extras-section">
+                <h3 style="margin-bottom:10px; color:var(--primary-orange);">תוספות למנה:</h3>
+                <div id="modal-item-extras" class="extras-list"></div>
+            </div>
+            <div style="padding: 20px;">
+                <button class="btn-submit" onclick="closeItemModal()">חזרה לתפריט</button>
+            </div>
         </div>
     </div>
 
@@ -150,93 +144,44 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         const GOOGLE_REVIEW_LINK = "https://search.google.com/local/writereview?placeid=ChIJg-W3-05THBURSuuTalV3WlI";
 
         let allItems = [];
+        let currentCategory = 'הכל';
         let selectedRating = 0;
 
         async function loadMenu() {
             try {
                 const querySnapshot = await getDocs(collection(db, "menu_vitafood"));
-                allItems = querySnapshot.docs.map(doc => doc.data());
-                renderTabs(allItems);
+                allItems = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTabs();
                 renderMenu(allItems);
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Error loading menu:", e); }
         }
 
-        window.openReviewModal = () => document.getElementById('review-modal').style.display = 'flex';
-        window.closeReviewModal = () => { document.getElementById('review-modal').style.display = 'none'; resetModal(); };
-
-        window.handleRating = async (rating) => {
-            selectedRating = rating;
-            document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < rating));
-            
-            if (rating >= 4) {
-                document.getElementById('modal-title').innerText = "תודה על הפרגון!";
-                document.getElementById('modal-desc').innerText = "מעבירים אתכם לגוגל...";
-                // שומרים את הדירוג החיובי ב-Firebase לפני שעוברים לגוגל (אופציונלי)
-                await addDoc(collection(db, "feedback_vitafood"), { rating: rating, timestamp: serverTimestamp(), type: "positive" });
-                setTimeout(() => { window.open(GOOGLE_REVIEW_LINK, '_blank'); closeReviewModal(); }, 1200);
-            } else {
-                document.getElementById('modal-title').innerText = "חשוב לנו לתקן";
-                document.getElementById('modal-desc').innerText = "נשמח לשמוע מה לא היה תקין:";
-                document.getElementById('stars-div').classList.add('hidden');
-                document.getElementById('feedback-area').classList.remove('hidden');
-            }
-        };
-
-        window.submitToFirebase = async () => {
-            const feedbackText = document.getElementById('low-rating-text').value;
-            const btn = document.getElementById('submit-btn');
-            
-            btn.innerText = "שולח...";
-            btn.disabled = true;
-
-            try {
-                // שמירה ב-Firebase באוסף feedback_vitafood
-                await addDoc(collection(db, "feedback_vitafood"), {
-                    rating: selectedRating,
-                    text: feedbackText,
-                    timestamp: serverTimestamp(),
-                    type: "negative/improvement"
-                });
-
-                document.getElementById('feedback-area').innerHTML = "<h3>המשוב התקבל. תודה שעזרת לנו להשתפר!</h3>";
-                setTimeout(closeReviewModal, 2500);
-            } catch (e) {
-                console.error("Error saving feedback:", e);
-                alert("חלה שגיאה בשליחה. נסה שוב.");
-                btn.disabled = false;
-                btn.innerText = "שלח משוב לבעלים";
-            }
-        };
-
-        function resetModal() {
-            document.getElementById('modal-title').innerText = "איך הייתה החוויה?";
-            document.getElementById('modal-desc').innerText = "הדירוג שלכם חשוב לנו מאוד!";
-            document.getElementById('stars-div').classList.remove('hidden');
-            document.getElementById('feedback-area').classList.add('hidden');
-            document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-            selectedRating = 0;
-        }
-
-        // --- Menu Logic ---
-        function renderTabs(items) {
+        /* --- לוגיקת תפריט וחיפוש --- */
+        function renderTabs() {
             const container = document.getElementById('categories-container');
-            const categories = ['הכל', ...new Set(items.map(item => item.category))];
-            container.innerHTML = categories.map(cat => `<button class="tab-button ${cat === 'הכל' ? 'active' : ''}" onclick="window.setCategory('${cat}', this)">${cat}</button>`).join('');
+            const categories = ['הכל', ...new Set(allItems.map(item => item.category))];
+            container.innerHTML = categories.map(cat => `
+                <button class="tab-button ${cat === currentCategory ? 'active' : ''}" 
+                onclick="window.setCategory('${cat}', this)">${cat === 'burgers' ? 'המבורגרים' : cat === 'sides' ? 'תוספות' : cat === 'drinks' ? 'שתייה' : cat}</button>
+            `).join('');
         }
 
         function renderMenu(items) {
             const container = document.getElementById('menu-container');
+            if (items.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#666;">לא נמצאו מנות תואמות...</p>`;
+                return;
+            }
             container.innerHTML = items.map(item => `
-                <div class="menu-item">
+                <div class="menu-item" onclick="window.openItemDetails('${item.id}')">
                     <div class="item-content">
-                        <div><h3>${item.name}</h3><p>${item.description || ''}</p></div>
+                        <div><h3>${item.name}</h3><p>${item.desc || item.description || ''}</p></div>
                         <div class="item-price">₪${item.price}</div>
                     </div>
-                    <div class="item-image" style="background-image: url('${item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'}')"></div>
+                    <div class="item-image" style="background-image: url('${item.imageUrl || 'https://via.placeholder.com/150'}')"></div>
                 </div>
             `).join('');
         }
@@ -244,15 +189,99 @@
         window.setCategory = (category, button) => {
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            const filtered = category === 'הכל' ? allItems : allItems.filter(i => i.category === category);
-            renderMenu(filtered);
+            currentCategory = category;
+            applyFilters();
         };
 
-        document.getElementById('menu-search').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allItems.filter(i => i.name.toLowerCase().includes(term));
+        function applyFilters() {
+            const term = document.getElementById('menu-search').value.toLowerCase();
+            const filtered = allItems.filter(item => {
+                const matchesCat = currentCategory === 'הכל' || item.category === currentCategory;
+                const matchesSearch = item.name.toLowerCase().includes(term);
+                return matchesCat && matchesSearch;
+            });
             renderMenu(filtered);
-        });
+        }
+
+        document.getElementById('menu-search').addEventListener('input', applyFilters);
+
+        /* --- לוגיקת מודאל מנה ותוספות --- */
+        window.openItemDetails = (itemId) => {
+            const item = allItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('modal-item-name').innerText = item.name;
+            document.getElementById('modal-item-price').innerText = `₪${item.price}`;
+            document.getElementById('modal-item-desc').innerText = item.desc || item.description || "מנה מעולה מחומרי הגלם הטובים ביותר.";
+            document.getElementById('modal-item-image').style.backgroundImage = `url('${item.imageUrl}')`;
+
+            const extrasList = document.getElementById('modal-item-extras');
+            // כאן המערכת מחפשת שדה extras ב-Firebase. אם אין, היא מציגה תוספות קבועות להמבורגר
+            const itemExtras = item.extras || [
+                {name: "בצל מקורמל", price: 6},
+                {name: "ביצת עין", price: 8},
+                {name: "פטריות חמות", price: 8},
+                {name: "אננס צלוי", price: 8}
+            ];
+
+            extrasList.innerHTML = itemExtras.map(ex => `
+                <div class="extra-item">
+                    <span>${ex.name}</span>
+                    <span style="color:var(--primary-orange)">+ ₪${ex.price}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('item-modal').style.display = 'flex';
+        };
+
+        window.closeItemModal = () => document.getElementById('item-modal').style.display = 'none';
+
+        /* --- לוגיקת ביקורות (BarCard Booster) --- */
+        window.openReviewModal = () => document.getElementById('review-modal').style.display = 'flex';
+        window.closeReviewModal = () => { document.getElementById('review-modal').style.display = 'none'; resetReviewModal(); };
+
+        window.handleRating = async (rating) => {
+            selectedRating = rating;
+            document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < rating));
+            
+            if (rating >= 4) {
+                document.getElementById('review-title').innerText = "תודה על הפרגון!";
+                document.getElementById('review-desc').innerText = "מעבירים אתכם להשאיר 5 כוכבים בגוגל...";
+                await addDoc(collection(db, "feedback_vitafood"), { rating, timestamp: serverTimestamp(), type: "positive_direct" });
+                setTimeout(() => { window.open(GOOGLE_REVIEW_LINK, '_blank'); closeReviewModal(); }, 1500);
+            } else {
+                document.getElementById('review-title').innerText = "איך נוכל להשתפר?";
+                document.getElementById('review-desc').innerText = "נשמח לשמוע מה לא היה תקין:";
+                document.getElementById('stars-div').classList.add('hidden');
+                document.getElementById('feedback-area').classList.remove('hidden');
+            }
+        };
+
+        window.submitToFirebase = async () => {
+            const text = document.getElementById('low-rating-text').value;
+            const btn = document.getElementById('submit-feedback-btn');
+            btn.disabled = true; btn.innerText = "שולח...";
+
+            try {
+                await addDoc(collection(db, "feedback_vitafood"), {
+                    rating: selectedRating,
+                    text: text,
+                    timestamp: serverTimestamp(),
+                    type: "improvement_feedback"
+                });
+                document.getElementById('feedback-area').innerHTML = "<h3 style='color:var(--success-green)'>המשוב התקבל. תודה שעזרת לנו להשתפר!</h3>";
+                setTimeout(closeReviewModal, 2500);
+            } catch (e) { alert("שגיאה בשליחה. נסה שוב."); btn.disabled = false; }
+        };
+
+        function resetReviewModal() {
+            document.getElementById('review-title').innerText = "איך הייתה החוויה?";
+            document.getElementById('review-desc').innerText = "הדירוג שלכם חשוב לנו מאוד!";
+            document.getElementById('stars-div').classList.remove('hidden');
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+            selectedRating = 0;
+        }
 
         loadMenu();
     </script>
