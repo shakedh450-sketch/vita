@@ -38,24 +38,21 @@
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
-        /* מודלים - מרכוז סימטרי מוחלט (השיטה המנצחת) */
+        /* Modals - Symmetric Centering */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); display: none;
             z-index: 4000; backdrop-filter: blur(10px);
-            /* Grid container למרכוז מושלם */
             display: grid; place-items: center;
-            padding: 0; /* מסיר padding */
         }
 
         .modal-content {
             background: var(--card-bg); border-radius: 25px; text-align: center;
-            width: calc(100% - 30px); /* רוחב מלא פחות 15px מכל צד */
-            max-width: 420px; /* הגבלה למסכים גדולים */
+            width: calc(100% - 30px); max-width: 420px;
             border: 1px solid var(--border-color);
             position: relative; overflow: hidden;
             max-height: 90vh; display: flex; flex-direction: column;
-            margin: auto; /* מבטיח שהתיבה תתמרכז בתוך ה-grid */
+            margin: auto;
         }
         
         .large-item-image { width: 100%; height: 220px; background-size: cover; background-position: center; flex-shrink: 0; }
@@ -64,7 +61,6 @@
         .modal-body { overflow-y: auto; padding: 0 15px 20px 15px; scrollbar-width: none; }
         .modal-body::-webkit-scrollbar { display: none; }
         
-        .extras-section { border-top: 1px solid #333; padding-top: 15px; text-align: right; }
         #modal-item-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
         .extra-item { display: flex; justify-content: space-between; background: #252525; padding: 10px; border-radius: 12px; border: 1px solid #333; font-size: 0.85rem; }
         .extra-item span:last-child { color: var(--primary-orange); font-weight: bold; }
@@ -101,7 +97,6 @@
 
     <div class="review-section">
         <h2>נהניתם? פרגנו לנו! ⭐</h2>
-        <p>המשוב שלכם עוזר לנו להשתפר ולהמשיך להגיש לכם את הבשר הכי טוב בעפולה.</p>
         <div class="static-stars">
             <span class="static-star" onclick="window.handleRating(1)">★</span>
             <span class="static-star" onclick="window.handleRating(2)">★</span>
@@ -115,41 +110,36 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeItemModal()">&times;</span>
             <div id="modal-item-image" class="large-item-image"></div>
-            <div class="disclaimer-text">* התמונה להמחשה בלבד</div>
-            
+            <div class="disclaimer-text" style="font-size:0.7rem; color:#888;">* התמונה להמחשה בלבד</div>
             <div class="modal-body">
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
                     <h2 id="modal-item-name" style="margin:0; font-size: 1.4rem;"></h2>
                     <span id="modal-item-price" style="color:var(--primary-orange); font-size:1.4rem; font-weight:800;"></span>
                 </div>
                 <p id="modal-item-desc" style="color: #ccc; text-align: right; margin-bottom: 15px;"></p>
-                
                 <div class="extras-section" id="modal-extras-section">
                     <h3 style="margin-bottom:10px; text-align: right; font-size: 1.1rem;">תוספות למנה:</h3>
                     <div id="modal-item-extras"></div>
                 </div>
-                
                 <button class="btn-submit" onclick="closeItemModal()">חזרה לתפריט</button>
             </div>
         </div>
     </div>
 
     <div id="feedback-modal" class="modal-overlay" onclick="if(event.target == this) window.closeFeedbackModal()">
-        <div class="modal-content" style="padding:30px; width: calc(100% - 30px); margin: auto;">
+        <div class="modal-content" style="padding:30px;">
             <h2 id="feedback-title" style="color:var(--primary-orange)">נשמח להשתפר 🛠️</h2>
-            <p id="feedback-desc">צר לנו שהחוויה לא הייתה מושלמת. מה נוכל לשפר בפעם הבאה?</p>
-            
-            <div id="exit-stars" class="static-stars hidden" style="margin-top: 20px;">
+            <p id="feedback-desc">איך הייתה החוויה שלכם?</p>
+            <div id="exit-stars" class="static-stars" style="margin-top: 15px;">
                 <span class="static-star" onclick="window.handleRating(1)">★</span>
                 <span class="static-star" onclick="window.handleRating(2)">★</span>
                 <span class="static-star" onclick="window.handleRating(3)">★</span>
                 <span class="static-star" onclick="window.handleRating(4)">★</span>
                 <span class="static-star" onclick="window.handleRating(5)">★</span>
             </div>
-
-            <div id="feedback-form">
-                <textarea id="feedback-text" style="width:100%; height:100px; border-radius:12px; padding:12px; background:#111; color:white; border:1px solid #444; font-family:inherit; margin-top:15px;" placeholder="ספרו לנו מה קרה..."></textarea>
-                <button class="btn-submit" onclick="window.submitFeedback()">שלח משוב לבעלים</button>
+            <div id="feedback-form" class="hidden">
+                <textarea id="feedback-text" style="width:100%; height:100px; border-radius:12px; padding:12px; background:#111; color:white; border:1px solid #444; margin-top:15px;" placeholder="ספרו לנו מה קרה..."></textarea>
+                <button class="btn-submit" onclick="window.submitFeedback()">שלח משוב</button>
             </div>
             <button onclick="window.closeFeedbackModal()" style="margin-top:15px; background:none; border:none; color:#777; cursor:pointer;">סגור</button>
         </div>
@@ -176,8 +166,15 @@
         let allItems = [];
         const cats = ['עסקיות', 'המבורגרים', 'עיקריות', 'מנות ילדים', 'תוספות בצד', 'משקאות', 'בירות'];
 
+        // תיקון הבאג: מונעים הפעלה בטעינה הראשונה
+        let hasInteracted = false;
+        window.addEventListener('touchstart', () => hasInteracted = true, {once: true});
+        window.addEventListener('mousedown', () => hasInteracted = true, {once: true});
+
         window.addEventListener('load', () => {
-            history.pushState({ page: 'home' }, "");
+            setTimeout(() => {
+                if (!history.state) history.replaceState({ page: 'home' }, "");
+            }, 100);
         });
 
         onSnapshot(query(collection(db, "menus"), where("businessId", "==", B_ID)), (s) => {
@@ -234,12 +231,10 @@
         window.openItemDetails = (id) => {
             const i = allItems.find(x => x.id === id);
             if(!i) return;
-
             history.pushState({ page: 'item' }, "");
-
             document.getElementById('modal-item-name').innerText = i.name;
             document.getElementById('modal-item-price').innerText = `₪${i.price}`;
-            document.getElementById('modal-item-desc').innerText = i.desc || "מנה מובחרת של ויטה פוד.";
+            document.getElementById('modal-item-desc').innerText = i.desc || "";
             document.getElementById('modal-item-image').style.backgroundImage = `url('${i.imageUrl || ''}')`;
             const sec = document.getElementById('modal-extras-section');
             if(i.extras && i.extras.length > 0){
@@ -259,8 +254,13 @@
                 window.closeItemModal(true);
                 return;
             }
+            if (document.getElementById('feedback-modal').style.display === 'flex') {
+                window.closeFeedbackModal();
+                return;
+            }
 
-            if (!event.state) {
+            // פתיחת ביקורת ביציאה - רק אם הייתה אינטראקציה אמיתית
+            if (!event.state && hasInteracted) {
                 history.pushState({ page: 'home' }, "");
                 window.openExitReview();
             }
