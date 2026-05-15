@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VITA FOOD | Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #121212; 
+            --card: #1e1e1e; 
+            --text: #ffffff;
+            --primary: #ff9800; /* הכתום המזוהה עם ויטה */
+            --danger: #ff4444; 
+            --success: #4caf50; 
+            --border: #333333;
+        }
+
+        body { font-family: 'Assistant', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; min-height: 100vh; }
+        
+        /* מסך התחברות */
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* לוח בקרה */
+        .admin-content { display: none; max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+        
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header-bar h1 { color: var(--primary); font-weight: 800; margin: 0; font-size: 1.8rem; }
+
+        .settings-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
+            background: var(--card); padding: 25px; border-radius: 20px; margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .settings-box h4 { margin: 0 0 10px 0; font-size: 0.95rem; color: #aaa; font-weight: 700; }
+        input, select, textarea { 
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); 
+            background: #111; color: white; font-family: inherit; box-sizing: border-box; font-size: 1rem;
+        }
+
+        .item-list { display: grid; gap: 15px; }
+        .item-card { 
+            background: var(--card); padding: 20px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-right: 6px solid var(--primary); transition: 0.3s;
+        }
+        .item-card.out-of-stock { border-right-color: var(--danger); opacity: 0.6; }
+
+        .item-info h3 { margin: 0; font-size: 1.15rem; }
+        .item-info p { margin: 5px 0 0; font-size: 0.9rem; color: #888; }
+
+        .actions { display: flex; gap: 15px; align-items: center; }
+        
+        /* מתג זמינות מנה */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .price-chip { background: #333; padding: 8px 15px; border-radius: 10px; font-weight: 800; color: var(--primary); cursor: pointer; }
+        .btn-action { background: var(--primary); color: #000; padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-action:hover { transform: scale(1.05); }
+        
+        /* מודאל */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); padding: 30px; border-radius: 25px; z-index: 1000; width: 90%; max-width: 420px; box-shadow: 0 0 60px rgba(0,0,0,0.8); border: 1px solid var(--border); }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999; backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+<div id="loginSection" class="login-container">
+    <div class="login-box">
+        <h1 style="color:var(--primary); margin-bottom:10px;">VITA FOOD</h1>
+        <h2 style="margin-bottom:25px;">כניסת מנהל 🍔</h2>
+        <input type="email" id="loginEmail" placeholder="אימייל">
+        <input type="password" id="loginPassword" placeholder="סיסמה" style="margin-top:15px;">
+        <button onclick="window.login()" class="btn-action" style="width:100%; margin-top:25px;">התחבר למערכת</button>
+        <p id="loginError" style="color:var(--danger); font-size:0.9rem; margin-top:15px;"></p>
+    </div>
+</div>
+
+<div id="adminSection" class="admin-content">
+    <div class="header-bar">
+        <h1>Control Center 🍔</h1>
+        <div style="display:flex; gap:12px;">
+            <button class="btn-action" onclick="openModal()">+ מנה חדשה</button>
+            <button onclick="window.logout()" style="background:#333; border:none; color:white; padding:12px; border-radius:12px; cursor:pointer; font-weight:700;">התנתק</button>
+        </div>
+    </div>
+
+    <div class="settings-grid">
+        <div class="settings-box">
+            <h4>מבצע רץ (באנר עליון)</h4>
+            <input type="text" id="promoText" placeholder="לדוגמה: המבורגר שני ב-50%!" onchange="window.updateGlobalSettings()">
+        </div>
+        <div class="settings-box">
+            <h4>סטטוס מטבח</h4>
+            <select id="kitchenStatus" onchange="window.updateGlobalSettings()">
+                <option value="open">פתוח כרגיל ✅</option>
+                <option value="busy">עומס קל ⏳</option>
+                <option value="very-busy">עומס כבד 🚨</option>
+                <option value="closed">סגור 🔒</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="admin-grid" class="item-list"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="itemModal">
+    <h3 style="margin-top:0; border-bottom: 2px solid var(--primary); padding-bottom:10px;">הוספת מנה חדשה</h3>
+    <div style="margin-top:20px;">
+        <label style="font-size:0.8rem; color:#aaa;">שם המנה</label>
+        <input type="text" id="itemName" placeholder="למשל: המבורגר בקר 220 ג'" style="margin-bottom:15px;">
+        
+        <label style="font-size:0.8rem; color:#aaa;">מחיר</label>
+        <input type="number" id="itemPrice" placeholder="₪" style="margin-bottom:15px;">
+        
+        <label style="font-size:0.8rem; color:#aaa;">קטגוריה</label>
+        <select id="itemCategory" style="margin-bottom:15px;">
+            <option value="Burgers">המבורגרים</option>
+            <option value="Starters">ראשונות</option>
+            <option value="Main">עיקריות</option>
+            <option value="Kids">מנות ילדים</option>
+            <option value="Drinks">משקאות</option>
+        </select>
+        
+        <label style="font-size:0.8rem; color:#aaa;">תיאור המנה</label>
+        <textarea id="itemDesc" placeholder="מה יש במנה..." rows="3" style="margin-bottom:20px;"></textarea>
+        
+        <button onclick="saveItem()" class="btn-action" style="width:100%;">שמור והוסף לתפריט</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // שימוש בפרמטרים של הפרויקט שלך
+    const firebaseConfig = {
+        apiKey: "AIzaSyDYZxPjSML1gHTTANx0Fp6TlhI5_ookHNU",
+        authDomain: "hevresbar.firebaseapp.com",
+        projectId: "hevresbar",
+        storageBucket: "hevresbar.firebasestorage.app",
+        messagingSenderId: "737238391891",
+        appId: "1:737238391891:web:ad0076917e2f7133eb7aa6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ניהול מצב התחברות
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            initAdmin();
+        } else {
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('adminSection').style.display = 'none';
+        }
+    });
+
+    window.login = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPassword').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (e) {
+            document.getElementById('loginError').innerText = "אימייל או סיסמה שגויים";
+        }
+    };
+
+    window.logout = () => signOut(auth);
+
+    function initAdmin() {
+        // טעינת הגדרות גלובליות
+        getDoc(doc(db, "settings", "vitafood")).then(s => {
+            if(s.exists()){
+                document.getElementById('promoText').value = s.data().promoText || "";
+                document.getElementById('kitchenStatus').value = s.data().kitchenStatus || "open";
+            }
+        });
+
+        // האזנה בזמן אמת למנות התפריט
+        onSnapshot(collection(db, "menus"), (snap) => {
+            const grid = document.getElementById('admin-grid');
+            grid.innerHTML = '';
+            snap.forEach(d => {
+                const item = d.data();
+                if(item.businessId !== 'vitafood') return; // מוודא שרק מנות של ויטה מוצגות
+
+                const isOut = item.isAvailable === false;
+                const card = document.createElement('div');
+                card.className = `item-card ${isOut ? 'out-of-stock' : ''}`;
+                card.innerHTML = `
+                    <div class="item-info">
+                        <h3>${item.name}</h3>
+                        <p>${item.category}</p>
+                    </div>
+                    <div class="actions">
+                        <div class="price-chip" onclick="window.changePrice('${d.id}', ${item.price})">₪${item.price}</div>
+                        <label class="switch">
+                            <input type="checkbox" ${!isOut ? 'checked' : ''} onchange="window.toggleStock('${d.id}', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <button onclick="window.deleteItem('${d.id}')" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        });
+    }
+
+    window.updateGlobalSettings = async () => {
+        await setDoc(doc(db, "settings", "vitafood"), {
+            promoText: document.getElementById('promoText').value,
+            kitchenStatus: document.getElementById('kitchenStatus').value
+        }, { merge: true });
+    };
+
+    window.toggleStock = async (id, isAvailable) => {
+        await updateDoc(doc(db, "menus", id), { isAvailable });
+    };
+
+    window.changePrice = async (id, old) => {
+        const p = prompt("מחיר מעודכן:", old);
+        if(p && !isNaN(p)) await updateDoc(doc(db, "menus", id), { price: Number(p) });
+    };
+
+    window.deleteItem = async (id) => {
+        if(confirm("למחוק את המנה מהתפריט לצמיתות?")) await deleteDoc(doc(db, "menus", id));
+    };
+
+    window.saveItem = async () => {
+        const name = document.getElementById('itemName').value;
+        const price = Number(document.getElementById('itemPrice').value);
+        if(!name || !price) return alert("יש להזין שם ומחיר");
+        
+        await addDoc(collection(db, "menus"), {
+            name, price, 
+            category: document.getElementById('itemCategory').value,
+            desc: document.getElementById('itemDesc').value, 
+            isAvailable: true,
+            businessId: 'vitafood'
+        });
+        closeModal();
+        // איפוס שדות
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemPrice').value = '';
+        document.getElementById('itemDesc').value = '';
+    };
+
+    window.openModal = () => { document.getElementById('itemModal').style.display='block'; document.getElementById('overlay').style.display='block'; };
+    window.closeModal = () => { document.getElementById('itemModal').style.display='none'; document.getElementById('overlay').style.display='none'; };
+</script>
+</body>
+</html>
