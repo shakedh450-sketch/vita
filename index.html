@@ -38,7 +38,7 @@
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
-        /* Modal Design - 2 Column Layout */
+        /* Modal Design */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 4000; backdrop-filter: blur(10px); padding: 15px; }
         .modal-content { background: var(--card-bg); border-radius: 25px; width: 100%; max-width: 420px; border: 1px solid var(--border-color); position: relative; overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; }
         .large-item-image { width: 100%; height: 220px; background-size: cover; background-position: center; flex-shrink: 0; }
@@ -57,12 +57,12 @@
         .btn-submit { width: 100%; padding: 16px; background: var(--primary-orange); border: none; border-radius: 14px; font-weight: bold; cursor: pointer; color: black; font-size: 1.1rem; margin-top: 20px; }
 
         /* Footer & Review */
+        .footer-disclaimer { text-align: center; padding: 40px 20px; color: #666; font-size: 0.85rem; border-top: 1px solid #222; background: #0a0a0a; }
         .review-section { background: #1a1a1a; padding: 50px 20px; text-align: center; border-top: 1px solid var(--border-color); }
         .review-section h2 { color: var(--primary-orange); font-size: 1.8rem; margin-bottom: 10px; font-weight: 800; }
         .static-stars { display: flex; justify-content: center; gap: 12px; font-size: 3rem; margin-bottom: 10px; }
         .static-star { cursor: pointer; color: #333; transition: 0.3s; }
         .static-star.active { color: var(--primary-orange); }
-        .footer-disclaimer { text-align: center; padding: 40px 20px; color: #666; font-size: 0.85rem; border-top: 1px solid #222; background: #0a0a0a; }
         .hidden { display: none; }
     </style>
 </head>
@@ -201,9 +201,14 @@
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.toggle('active', btn.id === `tab-${catName}`));
         }
 
+        /* --- פתרון כפתור אחורה --- */
         window.openItemDetails = (id) => {
             const i = allItems.find(x => x.id === id);
             if(!i) return;
+
+            // מוסיפים נקודה להיסטוריה
+            history.pushState({ modalOpen: true }, "");
+
             document.getElementById('modal-item-name').innerText = i.name;
             document.getElementById('modal-item-price').innerText = `₪${i.price}`;
             document.getElementById('modal-item-desc').innerText = i.desc || "מנה מובחרת של ויטה פוד.";
@@ -216,7 +221,21 @@
             document.getElementById('item-modal').style.display = 'flex';
         };
 
-        window.closeItemModal = () => document.getElementById('item-modal').style.display = 'none';
+        // פונקציית סגירה משופרת שמתייחסת להיסטוריה
+        window.closeItemModal = (fromBackBtn = false) => {
+            document.getElementById('item-modal').style.display = 'none';
+            // אם סגרנו ידנית (X), צריך להוריד את הנקודה מההיסטוריה
+            if (!fromBackBtn && history.state && history.state.modalOpen) {
+                history.back();
+            }
+        };
+
+        // מאזין לכפתור הפיזי של "אחורה" בטלפון
+        window.onpopstate = (event) => {
+            if (document.getElementById('item-modal').style.display === 'flex') {
+                window.closeItemModal(true);
+            }
+        };
 
         window.handleRating = async (rating) => {
             document.querySelectorAll('.static-star').forEach((s, i) => s.classList.toggle('active', i < rating));
