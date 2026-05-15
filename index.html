@@ -16,19 +16,23 @@
 
         body { font-family: 'Assistant', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; overflow-x: hidden; scroll-behavior: smooth; }
 
+        /* Header */
         .header { text-align: center; padding: 60px 20px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1550547660-d9450f859349?w=1000'); background-size: cover; background-position: center; }
         .header h1 { color: var(--primary-orange); font-size: 3rem; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-weight: 800; }
         .header p { margin-top: 10px; font-size: 1.2rem; opacity: 0.9; }
 
+        /* Nav Section */
         .nav-section { position: sticky; top: 0; background-color: var(--bg-color); z-index: 1000; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
         .tabs-container { display: flex; overflow-x: auto; gap: 12px; padding: 0 15px; scrollbar-width: none; }
         .tabs-container::-webkit-scrollbar { display: none; }
         .tab-button { padding: 10px 22px; background: var(--card-bg); border: 1px solid var(--border-color); color: white; border-radius: 25px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: 0.3s; font-size: 1rem; }
         .tab-button.active { background: var(--primary-orange); color: black; border-color: var(--primary-orange); }
 
+        /* Category Sections */
         .category-section { padding: 20px 0; border-bottom: 1px solid #222; }
         .category-title { padding: 0 20px; color: var(--primary-orange); font-size: 1.8rem; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; }
 
+        /* Menu Grid */
         .menu-grid { padding: 0 20px; display: grid; gap: 15px; }
         .menu-item { background-color: var(--card-bg); border-radius: 15px; overflow: hidden; display: flex; height: 110px; border: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; }
         .item-content { flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
@@ -37,15 +41,18 @@
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
+        /* Review FAB */
         .review-wrapper { position: fixed; bottom: 25px; right: 20px; display: flex; align-items: center; gap: 10px; z-index: 2000; cursor: pointer; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .review-wrapper.visible { opacity: 1; visibility: visible; transform: translateY(0); }
         .review-label { background: var(--primary-orange); color: black; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .review-fab { background-color: var(--primary-orange); width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(255,152,0,0.4); animation: pulse 2s infinite; font-size: 24px; }
         
+        /* Stars & Modal */
         .stars-container { display: flex; justify-content: center; gap: 8px; margin: 25px 0; font-size: 2.5rem; }
         .star { cursor: pointer; color: #333; transition: 0.2s; }
         .star.active { color: var(--primary-orange); }
 
+        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 3000; backdrop-filter: blur(8px); }
         .modal-content { background: var(--card-bg); border-radius: 20px; text-align: center; width: 95%; max-width: 450px; border: 1px solid var(--border-color); position: relative; overflow: hidden; }
         .large-item-image { width: 100%; height: 250px; background-size: cover; background-position: center; }
@@ -135,12 +142,15 @@
         let allItems = [];
         const cats = ['עסקיות', 'המבורגרים', 'עיקריות', 'מנות ילדים', 'משקאות'];
 
+        // מעקב סריקות
         addDoc(collection(db, "scans"), { businessId: BUSINESS_ID, timestamp: serverTimestamp() });
 
+        // טעינת הגדרות
         onSnapshot(doc(db, "settings", BUSINESS_ID), (s) => {
             if(s.exists()) document.getElementById('promo-text').innerText = s.data().promoText || "";
         });
 
+        // טעינת מנות
         const q = query(collection(db, "menus"), where("businessId", "==", BUSINESS_ID));
         onSnapshot(q, (s) => {
             allItems = s.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -167,7 +177,8 @@
         function renderMenuByCategories() {
             const container = document.getElementById('main-menu-content');
             container.innerHTML = cats.map(cat => {
-                const items = allItems.filter(i => i.category === cat);
+                // סינון: רק מנות שהן במלאי (isAvailable !== false) יוצגו ללקוח
+                const items = allItems.filter(i => i.category === cat && i.isAvailable !== false);
                 if (items.length === 0) return '';
                 return `
                     <div class="category-section" id="section-${cat}">
@@ -221,6 +232,7 @@
 
         window.closeItemModal = () => document.getElementById('item-modal').style.display = 'none';
 
+        /* לוגיקת ביקורות */
         window.openReviewModal = () => document.getElementById('review-modal').style.display = 'flex';
         window.closeReviewModal = () => {
             document.getElementById('review-modal').style.display = 'none';
