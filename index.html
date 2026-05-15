@@ -38,41 +38,32 @@
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
-        /* תיקון ה-Modal - מניעת היתקעות בקצה העליון */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); display: none; 
-            justify-content: center; align-items: flex-start; /* שונה מ-center ל-flex-start */
-            z-index: 4000; backdrop-filter: blur(10px); 
-            overflow-y: auto; /* מאפשר גלילה של כל המודל במובייל */
-            padding: 20px 0;
-        }
-        .modal-content { 
-            background: var(--card-bg); border-radius: 25px; text-align: center; 
-            width: 92%; max-width: 480px; border: 1px solid var(--border-color); 
-            position: relative; overflow: hidden; 
-            margin: auto; /* שומר על מרכזיות אופקית ואנכית אם התוכן קצר */
-        }
-        .large-item-image { width: 100%; height: 250px; background-size: cover; background-position: center; }
-        .close-btn { 
-            position: absolute; top: 15px; right: 20px; font-size: 30px; color: white; 
-            cursor: pointer; z-index: 5000; background: rgba(0,0,0,0.6); 
-            width: 40px; height: 40px; border-radius: 50%; line-height: 38px; 
-        }
+        /* Modal Design - 2 Column Layout */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 4000; backdrop-filter: blur(10px); padding: 15px; }
+        .modal-content { background: var(--card-bg); border-radius: 25px; width: 100%; max-width: 420px; border: 1px solid var(--border-color); position: relative; overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; }
+        .large-item-image { width: 100%; height: 220px; background-size: cover; background-position: center; flex-shrink: 0; }
+        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 30px; color: white; cursor: pointer; z-index: 5000; background: rgba(0,0,0,0.6); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        
+        .modal-body { overflow-y: auto; padding: 0 15px 20px 15px; scrollbar-width: none; }
+        .modal-body::-webkit-scrollbar { display: none; }
+        
+        .item-info-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; text-align: right; }
+        .extras-section { border-top: 1px solid #333; padding-top: 15px; text-align: right; }
+        
+        #modal-item-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+        .extra-item { display: flex; justify-content: space-between; background: #252525; padding: 10px; border-radius: 12px; border: 1px solid #333; font-size: 0.85rem; }
+        .extra-item span:last-child { color: var(--primary-orange); font-weight: bold; }
 
-        /* שאר העיצובים */
-        .disclaimer-text { font-size: 0.75rem; color: #888; text-align: center; padding: 8px 0; font-style: italic; }
-        .item-info-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; text-align: right; }
-        .extras-section { padding: 20px; border-top: 1px solid #333; text-align: right; }
-        .extra-item { display: flex; justify-content: space-between; background: #222; padding: 14px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #333; }
-        .btn-submit { width: 90%; padding: 16px; background: var(--primary-orange); border: none; border-radius: 14px; font-weight: bold; cursor: pointer; color: black; font-size: 1.1rem; margin: 10px 0 20px 0; }
+        .btn-submit { width: 100%; padding: 16px; background: var(--primary-orange); border: none; border-radius: 14px; font-weight: bold; cursor: pointer; color: black; font-size: 1.1rem; margin-top: 20px; }
 
+        /* Footer & Review */
         .review-section { background: #1a1a1a; padding: 50px 20px; text-align: center; border-top: 1px solid var(--border-color); }
         .review-section h2 { color: var(--primary-orange); font-size: 1.8rem; margin-bottom: 10px; font-weight: 800; }
         .static-stars { display: flex; justify-content: center; gap: 12px; font-size: 3rem; margin-bottom: 10px; }
         .static-star { cursor: pointer; color: #333; transition: 0.3s; }
-        .static-star.active { color: var(--primary-orange); transform: scale(1.1); }
+        .static-star.active { color: var(--primary-orange); }
         .footer-disclaimer { text-align: center; padding: 40px 20px; color: #666; font-size: 0.85rem; border-top: 1px solid #222; background: #0a0a0a; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -110,16 +101,31 @@
             <span class="close-btn" onclick="closeItemModal()">&times;</span>
             <div id="modal-item-image" class="large-item-image"></div>
             <div class="disclaimer-text">* התמונה להמחשה בלבד</div>
-            <div class="item-info-header">
-                <h2 id="modal-item-name" style="margin:0;"></h2>
-                <span id="modal-item-price" style="color:var(--primary-orange); font-size:1.5rem; font-weight:800;"></span>
+            
+            <div class="modal-body">
+                <div class="item-info-header">
+                    <h2 id="modal-item-name" style="margin:0; font-size: 1.4rem;"></h2>
+                    <span id="modal-item-price" style="color:var(--primary-orange); font-size:1.4rem; font-weight:800;"></span>
+                </div>
+                <p id="modal-item-desc" style="color: #ccc; text-align: right; margin-bottom: 15px;"></p>
+                
+                <div class="extras-section" id="modal-extras-section">
+                    <h3 style="margin-bottom:10px; text-align: right; font-size: 1.1rem;">תוספות למנה:</h3>
+                    <div id="modal-item-extras"></div>
+                </div>
+                
+                <button class="btn-submit" onclick="closeItemModal()">חזרה לתפריט</button>
             </div>
-            <p id="modal-item-desc" style="padding: 0 20px; color: #ccc; text-align: right;"></p>
-            <div class="extras-section" id="modal-extras-section">
-                <h3 style="margin-bottom:15px;">תוספות למנה:</h3>
-                <div id="modal-item-extras"></div>
-            </div>
-            <button class="btn-submit" onclick="closeItemModal()">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <div id="feedback-modal" class="modal-overlay" onclick="if(event.target == this) window.closeFeedbackModal()">
+        <div class="modal-content" style="padding:30px;">
+            <h2 style="color:var(--primary-orange)">נשמח להשתפר 🛠️</h2>
+            <p>צר לנו שהחוויה לא הייתה מושלמת. מה נוכל לשפר בפעם הבאה?</p>
+            <textarea id="feedback-text" style="width:100%; height:100px; border-radius:12px; padding:12px; background:#111; color:white; border:1px solid #444; font-family:inherit; margin-top:15px;" placeholder="ספרו לנו מה קרה..."></textarea>
+            <button class="btn-submit" onclick="window.submitFeedback()">שלח משוב לבעלים</button>
+            <button onclick="window.closeFeedbackModal()" style="margin-top:15px; background:none; border:none; color:#777; cursor:pointer;">סגור</button>
         </div>
     </div>
 
@@ -218,8 +224,18 @@
                 window.open(GOOGLE_LINK, '_blank');
                 addDoc(collection(db, "reviews"), { businessId: B_ID, rating, timestamp: serverTimestamp(), type: "positive" });
             } else {
-                alert("תודה על הדירוג! נשמח לשמוע איך נוכל להשתפר בפעם הבאה.");
+                window.lastRating = rating;
+                document.getElementById('feedback-modal').style.display = 'flex';
             }
+        };
+
+        window.closeFeedbackModal = () => document.getElementById('feedback-modal').style.display = 'none';
+
+        window.submitFeedback = async () => {
+            const text = document.getElementById('feedback-text').value;
+            await addDoc(collection(db, "reviews"), { businessId: B_ID, rating: window.lastRating, text, timestamp: serverTimestamp(), type: "improvement" });
+            alert("תודה על המשוב, אנחנו נשתפר!");
+            window.closeFeedbackModal();
         };
     </script>
 </body>
