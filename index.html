@@ -41,7 +41,7 @@
         /* Modals - Symmetric Grid Centering */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none !important; /* כבוי כברירת מחדל */
+            background: rgba(0,0,0,0.95); display: none !important;
             z-index: 4000; backdrop-filter: blur(10px);
             display: grid; place-items: center;
         }
@@ -97,7 +97,8 @@
 
     <div class="review-section">
         <h2>נהניתם? פרגנו לנו! ⭐</h2>
-        <div class="static-stars">
+        <p>המשוב שלכם עוזר לנו להשתפר.</p>
+        <div class="static-stars" id="main-stars">
             <span class="static-star" onclick="window.handleRating(1)">★</span>
             <span class="static-star" onclick="window.handleRating(2)">★</span>
             <span class="static-star" onclick="window.handleRating(3)">★</span>
@@ -130,15 +131,17 @@
         <div class="modal-content" style="padding:30px;">
             <h2 id="feedback-title" style="color:var(--primary-orange)">נשמח להשתפר 🛠️</h2>
             <p id="feedback-desc">איך הייתה החוויה שלכם?</p>
-            <div id="exit-stars" class="static-stars" style="margin-top: 15px;">
-                <span class="static-star" onclick="window.handleRating(1)">★</span>
-                <span class="static-star" onclick="window.handleRating(2)">★</span>
-                <span class="static-star" onclick="window.handleRating(3)">★</span>
-                <span class="static-star" onclick="window.handleRating(4)">★</span>
-                <span class="static-star" onclick="window.handleRating(5)">★</span>
+            
+            <div id="modal-stars-div" class="static-stars" style="margin-top: 15px;">
+                <span class="static-star modal-s" onclick="window.handleRating(1)">★</span>
+                <span class="static-star modal-s" onclick="window.handleRating(2)">★</span>
+                <span class="static-star modal-s" onclick="window.handleRating(3)">★</span>
+                <span class="static-star modal-s" onclick="window.handleRating(4)">★</span>
+                <span class="static-star modal-s" onclick="window.handleRating(5)">★</span>
             </div>
+
             <div id="feedback-form" class="hidden">
-                <textarea id="feedback-text" style="width:100%; height:100px; border-radius:12px; padding:12px; background:#111; color:white; border:1px solid #444; margin-top:15px;" placeholder="ספרו לנו מה קרה..."></textarea>
+                <textarea id="feedback-text" style="width:100%; height:100px; border-radius:12px; padding:12px; background:#111; color:white; border:1px solid #444; margin-top:15px;" placeholder="ספרו לנו מה נוכל לשפר..."></textarea>
                 <button class="btn-submit" onclick="window.submitFeedback()">שלח משוב</button>
             </div>
             <button onclick="window.closeFeedbackModal()" style="margin-top:15px; background:none; border:none; color:#777; cursor:pointer;">סגור</button>
@@ -165,17 +168,13 @@
 
         let allItems = [];
         const cats = ['עסקיות', 'המבורגרים', 'עיקריות', 'מנות ילדים', 'תוספות בצד', 'משקאות', 'בירות'];
-
-        // ניהול מצב והיסטוריה
         let userActionCount = 0;
         
         window.addEventListener('load', () => {
-            // מאפסים את המצב לחלוטין בטעינה
             if (history.state) history.replaceState(null, "");
             history.pushState({ page: 'home' }, "");
         });
 
-        // ספירת אינטראקציות אמיתיות
         window.addEventListener('click', () => userActionCount++, {passive: true});
 
         onSnapshot(query(collection(db, "menus"), where("businessId", "==", B_ID)), (s) => {
@@ -232,22 +231,17 @@
         window.openItemDetails = (id) => {
             const i = allItems.find(x => x.id === id);
             if(!i) return;
-            
             history.pushState({ page: 'item' }, "");
-            
             document.getElementById('modal-item-name').innerText = i.name;
             document.getElementById('modal-item-price').innerText = `₪${i.price}`;
             document.getElementById('modal-item-desc').innerText = i.desc || "";
             document.getElementById('modal-item-image').style.backgroundImage = `url('${i.imageUrl || ''}')`;
-            
             const sec = document.getElementById('modal-extras-section');
             if(i.extras && i.extras.length > 0){
                 sec.style.display = 'block';
                 document.getElementById('modal-item-extras').innerHTML = i.extras.map(e => `<div class="extra-item"><span>${e.name}</span><span>+ ₪${e.price}</span></div>`).join('');
             } else { sec.style.display = 'none'; }
-            
-            const modal = document.getElementById('item-modal');
-            modal.setAttribute('style', 'display: grid !important');
+            document.getElementById('item-modal').setAttribute('style', 'display: grid !important');
         };
 
         window.closeItemModal = (fromBack = false) => {
@@ -256,51 +250,54 @@
         };
 
         window.onpopstate = (event) => {
-            // אם מודל מנה פתוח - סגור אותו
             if (document.getElementById('item-modal').style.display.includes('grid')) {
                 window.closeItemModal(true);
                 return;
             }
-            
-            // אם מודל ביקורת פתוח - סגור אותו
             if (document.getElementById('feedback-modal').style.display.includes('grid')) {
                 window.closeFeedbackModal();
                 return;
             }
-
-            // רק אם המשתמש באמת ביצע פעולה ואין היסטוריה קדימה - פתח ביקורת יציאה
             if (!event.state && userActionCount > 0) {
                 history.pushState({ page: 'home' }, "");
                 window.openExitReview();
             }
         };
 
-        window.openExitReview = () => {
-            document.getElementById('feedback-title').innerText = "נהניתם מהתפריט? ✨";
-            document.getElementById('feedback-desc').innerText = "נשמח לדירוג קצר לפני שאתם הולכים:";
-            document.getElementById('exit-stars').classList.remove('hidden');
-            document.getElementById('feedback-form').classList.add('hidden');
-            document.getElementById('feedback-modal').setAttribute('style', 'display: grid !important');
-        };
-
+        /* לוגיקת דירוג מתוקנת */
         window.handleRating = async (rating) => {
+            // צביעת כוכבים בשני המקומות
             document.querySelectorAll('.static-star').forEach((s, i) => s.classList.toggle('active', i < rating));
+            document.querySelectorAll('.modal-s').forEach((s, i) => s.classList.toggle('active', i < rating));
+
             if (rating >= 4) {
                 window.open(GOOGLE_LINK, '_blank');
                 addDoc(collection(db, "reviews"), { businessId: B_ID, rating, timestamp: serverTimestamp(), type: "positive" });
                 window.closeFeedbackModal();
             } else {
                 window.lastRating = rating;
+                // עדכון המודל למצב של "שליחת משוב"
                 document.getElementById('feedback-title').innerText = "נשמח להשתפר 🛠️";
-                document.getElementById('exit-stars').classList.add('hidden');
+                document.getElementById('feedback-desc').innerText = "מה נוכל לשפר בפעם הבאה?";
+                document.getElementById('modal-stars-div').classList.add('hidden');
                 document.getElementById('feedback-form').classList.remove('hidden');
+                document.getElementById('feedback-modal').setAttribute('style', 'display: grid !important');
             }
+        };
+
+        window.openExitReview = () => {
+            document.getElementById('feedback-title').innerText = "נהניתם מהתפריט? ✨";
+            document.getElementById('feedback-desc').innerText = "נשמח לדירוג קצר לפני שאתם הולכים:";
+            document.getElementById('modal-stars-div').classList.remove('hidden');
+            document.getElementById('feedback-form').classList.add('hidden');
+            document.getElementById('feedback-modal').setAttribute('style', 'display: grid !important');
         };
 
         window.closeFeedbackModal = () => document.getElementById('feedback-modal').setAttribute('style', 'display: none !important');
 
         window.submitFeedback = async () => {
             const text = document.getElementById('feedback-text').value;
+            if(!text) return alert("אנא כתבו לנו משהו קטן...");
             await addDoc(collection(db, "reviews"), { businessId: B_ID, rating: window.lastRating, text, timestamp: serverTimestamp(), type: "improvement" });
             alert("תודה על המשוב!");
             window.closeFeedbackModal();
