@@ -38,10 +38,10 @@
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
-        /* Modals - Symmetric Centering */
+        /* Modals - Symmetric Grid Centering */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none;
+            background: rgba(0,0,0,0.95); display: none !important; /* כבוי כברירת מחדל */
             z-index: 4000; backdrop-filter: blur(10px);
             display: grid; place-items: center;
         }
@@ -74,7 +74,7 @@
         .static-stars { display: flex; justify-content: center; gap: 12px; font-size: 3rem; margin-bottom: 10px; }
         .static-star { cursor: pointer; color: #333; transition: 0.3s; }
         .static-star.active { color: var(--primary-orange); }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -106,11 +106,11 @@
         </div>
     </div>
 
-    <div id="item-modal" class="modal-overlay" onclick="if(event.target == this) closeItemModal()">
+    <div id="item-modal" class="modal-overlay" style="display: none;" onclick="if(event.target == this) closeItemModal()">
         <div class="modal-content">
             <span class="close-btn" onclick="closeItemModal()">&times;</span>
             <div id="modal-item-image" class="large-item-image"></div>
-            <div class="disclaimer-text" style="font-size:0.7rem; color:#888;">* התמונה להמחשה בלבד</div>
+            <div class="disclaimer-text" style="font-size:0.7rem; color:#888; padding: 5px;">* התמונה להמחשה בלבד</div>
             <div class="modal-body">
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 0;">
                     <h2 id="modal-item-name" style="margin:0; font-size: 1.4rem;"></h2>
@@ -126,7 +126,7 @@
         </div>
     </div>
 
-    <div id="feedback-modal" class="modal-overlay" onclick="if(event.target == this) window.closeFeedbackModal()">
+    <div id="feedback-modal" class="modal-overlay" style="display: none;" onclick="if(event.target == this) window.closeFeedbackModal()">
         <div class="modal-content" style="padding:30px;">
             <h2 id="feedback-title" style="color:var(--primary-orange)">נשמח להשתפר 🛠️</h2>
             <p id="feedback-desc">איך הייתה החוויה שלכם?</p>
@@ -166,16 +166,17 @@
         let allItems = [];
         const cats = ['עסקיות', 'המבורגרים', 'עיקריות', 'מנות ילדים', 'תוספות בצד', 'משקאות', 'בירות'];
 
-        // תיקון הבאג: מונעים הפעלה בטעינה הראשונה
-        let hasInteracted = false;
-        window.addEventListener('touchstart', () => hasInteracted = true, {once: true});
-        window.addEventListener('mousedown', () => hasInteracted = true, {once: true});
-
+        // ניהול מצב והיסטוריה
+        let userActionCount = 0;
+        
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (!history.state) history.replaceState({ page: 'home' }, "");
-            }, 100);
+            // מאפסים את המצב לחלוטין בטעינה
+            if (history.state) history.replaceState(null, "");
+            history.pushState({ page: 'home' }, "");
         });
+
+        // ספירת אינטראקציות אמיתיות
+        window.addEventListener('click', () => userActionCount++, {passive: true});
 
         onSnapshot(query(collection(db, "menus"), where("businessId", "==", B_ID)), (s) => {
             allItems = s.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -231,36 +232,44 @@
         window.openItemDetails = (id) => {
             const i = allItems.find(x => x.id === id);
             if(!i) return;
+            
             history.pushState({ page: 'item' }, "");
+            
             document.getElementById('modal-item-name').innerText = i.name;
             document.getElementById('modal-item-price').innerText = `₪${i.price}`;
             document.getElementById('modal-item-desc').innerText = i.desc || "";
             document.getElementById('modal-item-image').style.backgroundImage = `url('${i.imageUrl || ''}')`;
+            
             const sec = document.getElementById('modal-extras-section');
             if(i.extras && i.extras.length > 0){
                 sec.style.display = 'block';
                 document.getElementById('modal-item-extras').innerHTML = i.extras.map(e => `<div class="extra-item"><span>${e.name}</span><span>+ ₪${e.price}</span></div>`).join('');
             } else { sec.style.display = 'none'; }
-            document.getElementById('item-modal').style.display = 'flex';
+            
+            const modal = document.getElementById('item-modal');
+            modal.setAttribute('style', 'display: grid !important');
         };
 
         window.closeItemModal = (fromBack = false) => {
-            document.getElementById('item-modal').style.display = 'none';
+            document.getElementById('item-modal').setAttribute('style', 'display: none !important');
             if(!fromBack && history.state?.page === 'item') history.back();
         };
 
         window.onpopstate = (event) => {
-            if (document.getElementById('item-modal').style.display === 'flex') {
+            // אם מודל מנה פתוח - סגור אותו
+            if (document.getElementById('item-modal').style.display.includes('grid')) {
                 window.closeItemModal(true);
                 return;
             }
-            if (document.getElementById('feedback-modal').style.display === 'flex') {
+            
+            // אם מודל ביקורת פתוח - סגור אותו
+            if (document.getElementById('feedback-modal').style.display.includes('grid')) {
                 window.closeFeedbackModal();
                 return;
             }
 
-            // פתיחת ביקורת ביציאה - רק אם הייתה אינטראקציה אמיתית
-            if (!event.state && hasInteracted) {
+            // רק אם המשתמש באמת ביצע פעולה ואין היסטוריה קדימה - פתח ביקורת יציאה
+            if (!event.state && userActionCount > 0) {
                 history.pushState({ page: 'home' }, "");
                 window.openExitReview();
             }
@@ -271,7 +280,7 @@
             document.getElementById('feedback-desc').innerText = "נשמח לדירוג קצר לפני שאתם הולכים:";
             document.getElementById('exit-stars').classList.remove('hidden');
             document.getElementById('feedback-form').classList.add('hidden');
-            document.getElementById('feedback-modal').style.display = 'flex';
+            document.getElementById('feedback-modal').setAttribute('style', 'display: grid !important');
         };
 
         window.handleRating = async (rating) => {
@@ -288,7 +297,7 @@
             }
         };
 
-        window.closeFeedbackModal = () => document.getElementById('feedback-modal').style.display = 'none';
+        window.closeFeedbackModal = () => document.getElementById('feedback-modal').setAttribute('style', 'display: none !important');
 
         window.submitFeedback = async () => {
             const text = document.getElementById('feedback-text').value;
