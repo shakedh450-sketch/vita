@@ -40,10 +40,8 @@
         .item-price { font-weight: bold; color: var(--primary-orange); font-size: 1.1rem; }
         .item-image { width: 110px; height: 110px; background-size: cover; background-position: center; flex-shrink: 0; }
 
-        /* Footer Disclaimer (Now First) */
+        /* Footer & Review Layout */
         .footer-disclaimer { text-align: center; padding: 40px 20px; color: #666; font-size: 0.85rem; border-top: 1px solid #222; background: #0a0a0a; }
-        
-        /* Review Section (Now Last) */
         .review-section { background: #1a1a1a; padding: 50px 20px; text-align: center; border-top: 1px solid var(--border-color); }
         .review-section h2 { color: var(--primary-orange); font-size: 1.8rem; margin-bottom: 10px; font-weight: 800; }
         .review-section p { color: #ccc; margin-bottom: 25px; font-size: 1.1rem; }
@@ -92,7 +90,6 @@
             <span class="static-star" onclick="window.handleRating(4)">★</span>
             <span class="static-star" onclick="window.handleRating(5)">★</span>
         </div>
-        <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">לחצו על הכוכבים לדירוג</div>
     </div>
 
     <div id="item-modal" class="modal-overlay" onclick="if(event.target == this) closeItemModal()">
@@ -126,8 +123,9 @@
     </div>
 
     <script type="module">
+        // תיקון הייבוא: מחזירים ל-firestore.js
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDYZxPjSML1gHTTANx0Fp6TlhI5_ookHNU",
@@ -145,12 +143,6 @@
 
         let allItems = [];
         const cats = ['עסקיות', 'המבורגרים', 'עיקריות', 'מנות ילדים', 'תוספות בצד', 'משקאות', 'בירות'];
-
-        onSnapshot(doc(db, "settings", B_ID), (s) => {
-            // Updated to handle missing element safely
-            const promoEl = document.getElementById('promo-text');
-            if(s.exists() && promoEl) promoEl.innerText = s.data().promoText || "";
-        });
 
         onSnapshot(query(collection(db, "menus"), where("businessId", "==", B_ID)), (s) => {
             allItems = s.docs.map(d => ({ id: d.id, ...d.data() }));
